@@ -26,7 +26,7 @@ while status:# while status == true
     print("Dice 1:", dice1)
     print("Dice 2:", dice2)
 
-    if dice1 == dice2 :
+    if dice1 == 1 and dice2 == 1 :
         status = False
-        print("::: Sacaste par, el juego a terminado::::")
+        print("::: Sacaste par de unos, el juego a terminado::::")
         key = input("::: Presione cualquier tecla para salir :::")
