@@ -14,6 +14,15 @@ import sys
 
 
 pygame.init()
+#SONIDO GENERAL
+pygame.mixer.music.load("sonido/calamar.mp3")
+pygame.mixer.music.play(1)
+
+#SONIDO POR ACCIONES
+lado = pygame.mixer.Sound("sonido/lado.mp3")
+ladrillo = pygame.mixer.Sound("sonido/ladrillo.mp3")
+ga_ov= pygame.mixer.Sound("sonido/ga_ov.mp3")
+#suelo = pygame.mixer.Sound("sonido/lado.mp3")
 
 #############################################
 
@@ -26,21 +35,29 @@ class Ball(pygame.sprite.Sprite):
         self.rect.centery = HEIGHT / 2
         # [Param1 -> Veloc del mov. / Param2 -> Amplitud del mov]
         # A mayor amplitud rebote afecta eje Y y a menor amplitud rebote afecte eje X.
-        self.speed = [2,2] #[]
-
+        self.speed = [4,4] #[]
+        
     def pibot(self):
 
         #validate Y ¡!
         if self.rect.bottom >= HEIGHT or self.rect.top <=0:
             
             self.speed[1] = -self.speed[1]
+            
+            #COLOCAMOS EL SONIDO PARA LADO
+            lado.play()
+            
 
         elif self.rect.right >= WIDTH or self.rect.left <=0:
             
             self.speed[0] = -self.speed[0]
-        
+            
+            #COLOCAMOS EL SONIDO PARA LADO
+            lado.play()
+                 
         #validate x <- x ->
         self.rect.move_ip(self.speed)
+        
 
 #########################################################
 #PALETA
@@ -53,9 +70,10 @@ class Bar(pygame.sprite.Sprite):
         self.rect = self.img_bar.get_rect()
         self.rect.midbottom = (WIDTH / 2,HEIGHT-10)
         self.speed = [0,0] # []
+                
 
     def slide(self,listener):
-
+        
         if listener.key == pygame.K_LEFT and self.rect.left > 0 :
             self.speed = [-5,0]
 
@@ -75,6 +93,7 @@ class Brick(pygame.sprite.Sprite):
         self.image = pygame.image.load('images/ladrillo.png')
         self.rect = self.image.get_rect()
         self.rect.topleft = position
+                
 
 #######################################################
 #MURO
@@ -83,11 +102,11 @@ class Wall(pygame.sprite.Group):
         pygame.sprite.Group.__init__(self)
         posX = 0
         posY = 10
-
+        
         for i in range(totalBrick):
             brick = Brick(( posX,posY ))
             self.add(brick)
-
+            
             posX += brick.rect.width
             if posX >= WIDTH :
                 posX = 0
@@ -103,9 +122,9 @@ def game_over():
     txt_screen_rect.center = [WIDTH/2,HEIGHT/2]
     screen.blit(txt_screen,txt_screen_rect)
     pygame.display.flip()
-    print("Game Over")
-    time.sleep(5)
-    #sys.exit()
+    print("Game Over") 
+    time.sleep(3)
+    sys.exit()
 
 def set_score():
     
@@ -117,7 +136,7 @@ def set_score():
     screen.blit(txt_screen,txt_screen_rect)
 
 def set_lives():
-    label = "  vidas restantes: "
+    label = "     vidas restantes: "
     text_color = (130, 190, 67)
     txt_style = pygame.font.SysFont('Arial',35) #(Tipo de letra,Tamaño)
     text  = label + str(player_lives).zfill(1)
@@ -125,6 +144,7 @@ def set_lives():
     txt_screen_rect = txt_screen.get_rect()
     txt_screen_rect.topleft = [1,400]
     screen.blit(txt_screen,txt_screen_rect)
+    
 
 
 #######################################
@@ -132,7 +152,7 @@ def set_lives():
 #General settings
 WIDTH = 640
 HEIGHT = 480
-BG_COLOR = (52,102,95)
+BG_COLOR = (40,60,90)
 
 screen = pygame.display.set_mode( (WIDTH,  HEIGHT) )
 pygame.display.set_caption('Atari')
@@ -141,6 +161,8 @@ pygame.display.set_icon(icon)
 
 game_clock = pygame.time.Clock()#Reloj
 pygame.key.set_repeat(20)
+
+
 
 print(":::::::::::::::::::::::::::")
 print("Menu nivel del juego")
@@ -162,13 +184,13 @@ while status:
 
 if opt==1:
     ladrillos=20
-
+    
 elif opt==2:
     ladrillos=100
-
+    
 elif opt==3:
     ladrillos=200
-
+    
 elif opt==4:
 
     print("Has salido del juego")
@@ -191,13 +213,16 @@ player_lives = 3
 while True:
     game_clock.tick(60)
     for event in pygame.event.get():
+        
         # Verifica si se preciono la letra x de la ventana
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        # Verifica si el jugador precionó tela del teclado
+
+        # Verifica si el jugador precionó tecla del teclado
         elif event.type == pygame.KEYDOWN:
             player.slide(event)
+            
 
 
     #call pibot
@@ -208,9 +233,12 @@ while True:
 
     if pygame.sprite.collide_rect(ball,player):  #Player is the bar.
 
-         ball.speed[1]=-ball.speed[1]
+        ball.speed[1]=-ball.speed[1]
+         
+        #COLOCAMOS EL SONIDO PARA PISO
+        lado.play()
 
-    # Collisions between ball and wall (bricks)Destroy bricks (Destruir ladrillos)
+    #Collisions between ball and wall (bricks)Destroy bricks (Destruir ladrillos)
     
     elements =  pygame.sprite.spritecollide(ball,wall,False,collided=None)
     
@@ -226,6 +254,10 @@ while True:
             # Afectamos trayectoria
             ball.speed[1] = -ball.speed[1]
         wall.remove(brink)
+
+        #COLOCAMOS EL SONIDO PARA LADRILLO
+        ladrillo.play()
+        
         score = score + 1  #score+=1
 
     #Llamar la función game over cuando la bola  toque el piso
@@ -234,7 +266,10 @@ while True:
         player_lives = player_lives-1 #player_lives-=1
     
     if player_lives == 0:
+        ga_ov.play()
         game_over()
+            
+        
 
 
     #set Background Color
